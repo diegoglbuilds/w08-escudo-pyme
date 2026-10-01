@@ -13,6 +13,9 @@
 - The model receives only the validated incident category, short description, timestamp, and operations-impact flag. Model text is bounded and checked against a schema; deterministic policy sets a severity floor and enforces human confirmation.
 - With no usable OpenAI response, the incident route returns a deterministic result visibly labeled as simulated AI. A live API key is read only on the server and is never sent to client code.
 - Action completion and backup verification use browser storage solely for this local demo. They are not authentication or secure persistence.
+- Upgrade to the patched Next.js 16.3.8 release and React 19 after the installed 14.x line was reported vulnerable; the resulting npm audit reported zero vulnerabilities.
+- Normalize the incident form's local date/time to ISO UTC before submission, and require an explicit UTC timestamp in the API, to avoid timezone-dependent future-date checks.
+- Keep the first deployment demo-only. Supabase Auth, Postgres, and user-scoped RLS are prerequisites before enabling real business or incident data persistence.
 
 ## Next session first move
 
