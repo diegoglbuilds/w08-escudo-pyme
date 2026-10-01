@@ -18,6 +18,15 @@
 - Keep the first deployment demo-only. Supabase Auth, Postgres, and user-scoped RLS are prerequisites before enabling real business or incident data persistence.
 - Do not configure a Supabase service-role key in this demo; the app has no Supabase client or persistence layer yet, and the key is not needed for client Auth with RLS.
 
+## Mechanical test pass
+
+- Fictional test persona: Distribuidora La Estrella, Distribución, 8 employees; no real personal data used.
+- Bug found: the incident report date field could accept a future local time, then receive a validation error from the server.
+- Reproduction: in a Mexico City browser, open the incident form and note that its `datetime-local` maximum uses the UTC hour; enter a time two hours ahead of local time and submit a fictional report. The browser permits it, while `/api/triage` returns HTTP 400 because the corresponding absolute timestamp is in the future.
+- Root cause: the form derived a wall-clock field maximum with `new Date().toISOString().slice(0, 16)`, which contains UTC fields; the server validates the timestamp as an absolute instant.
+- Fix: format the maximum from local date and time fields, so the browser prevents future local times before submission.
+- Regression verification: added a unit test that checks local `datetime-local` formatting. Full test suite and production build results are recorded with the fix commit.
+
 ## Next session first move
 
 Configure Supabase Auth and user-scoped RLS-backed persistence before enabling storage of real business profiles, action progress, or incident reports.

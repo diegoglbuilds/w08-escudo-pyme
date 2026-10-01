@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getPolicySeverity, requiresHumanConfirmation, simulatedTriage, validateIncident, type IncidentInput } from "./incident";
+import { getPolicySeverity, requiresHumanConfirmation, simulatedTriage, toLocalDateTimeInputValue, validateIncident, type IncidentInput } from "./incident";
 
 function validInput(overrides: Partial<IncidentInput> = {}): IncidentInput {
   return {
@@ -12,6 +12,11 @@ function validInput(overrides: Partial<IncidentInput> = {}): IncidentInput {
 }
 
 describe("incident validation and escalation policy", () => {
+  it("formats the datetime-local maximum using local clock fields", () => {
+    const date = new Date(2026, 9, 1, 13, 5, 42);
+    expect(toLocalDateTimeInputValue(date)).toBe("2026-10-01T13:05");
+  });
+
   it("accepts the minimum structured report", () => {
     expect(validateIncident(validInput()).ok).toBe(true);
     expect(validateIncident({ ...validInput(), noticedAt: new Date().toISOString().slice(0, 16) }).ok).toBe(false);

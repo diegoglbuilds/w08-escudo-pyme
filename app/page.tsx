@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { getAssessment } from "@/lib/assessment";
-import type { IncidentCategory, TriageSuggestion } from "@/lib/incident";
+import { toLocalDateTimeInputValue, type IncidentCategory, type TriageSuggestion } from "@/lib/incident";
 
 type BusinessProfile = { name: string; type: string; size: string };
 
@@ -177,7 +177,7 @@ export default function HomePage() {
           <form onSubmit={reportIncident} className="space-y-4 rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-card">
             <label className="block text-sm font-medium">Tipo de problema<select name="category" required defaultValue="" className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-4 py-3"><option value="" disabled>Selecciona una categoría</option><option value="cuenta">Cuenta o acceso</option><option value="archivos">Archivos o información</option><option value="dispositivo">Dispositivo</option><option value="servicio">Servicio que no funciona</option><option value="otro">No estoy seguro / otro</option></select></label>
             <label className="block text-sm font-medium">¿Qué notaste?<textarea name="description" required minLength={10} maxLength={500} rows={3} placeholder="Describe brevemente lo que pasó" className="mt-1.5 w-full resize-y rounded-xl border border-slate-300 px-4 py-3" /></label>
-            <label className="block text-sm font-medium">¿Cuándo lo notaste?<input name="noticedAt" type="datetime-local" required max={new Date().toISOString().slice(0, 16)} className="mt-1.5 w-full rounded-xl border border-slate-300 px-4 py-3" /></label>
+            <label className="block text-sm font-medium">¿Cuándo lo notaste?<input name="noticedAt" type="datetime-local" required max={toLocalDateTimeInputValue(new Date())} className="mt-1.5 w-full rounded-xl border border-slate-300 px-4 py-3" /></label>
             <label className="block text-sm font-medium">¿Afecta la operación del negocio?<select name="operationsAffected" required defaultValue="no" className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-4 py-3"><option value="no">No</option><option value="si">Sí</option></select></label>
             {incidentError && <p role="alert" className="text-sm text-rose-700">{incidentError}</p>}
             <button disabled={incidentLoading} className="w-full rounded-xl bg-forest px-4 py-3 font-semibold text-white disabled:opacity-60">{incidentLoading ? "Revisando el reporte…" : "Recibir orientación inicial"}</button>

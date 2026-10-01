@@ -17,6 +17,11 @@ export type TriageSuggestion = {
   simulated: boolean;
 };
 
+export function toLocalDateTimeInputValue(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 export function validateIncident(value: unknown): { ok: true; data: IncidentInput } | { ok: false; error: string } {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return { ok: false, error: "Revisa el reporte e intenta de nuevo." };
   const input = value as Record<string, unknown>;
