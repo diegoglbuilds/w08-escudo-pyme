@@ -158,7 +158,7 @@ export default function HomePage() {
         </div>
         <div className="mt-7 grid gap-5 md:grid-cols-[.8fr_1.2fr]">
           <section className="rounded-2xl border border-emerald-950/10 bg-white p-6 shadow-card" aria-label="Resumen de riesgo">
-            <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-bold">Nivel de riesgo actual: {assessment.risk}</h2><span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">{assessment.label}</span></div>
+            <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-bold">Nivel de riesgo simulado: {assessment.risk}</h2><span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">{assessment.label}</span></div>
             <p className="mt-4 text-sm leading-6 text-slate-600">Este resultado se basa en datos de demostración. No revisamos dispositivos, cuentas ni actividad de tu negocio.</p>
             <p className="mt-4 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-950">Datos de demostración · Evaluación simulada</p>
           </section>

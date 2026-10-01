@@ -27,6 +27,26 @@
 - Fix: format the maximum from local date and time fields, so the browser prevents future local times before submission.
 - Regression verification: added a unit test that checks local `datetime-local` formatting. Full test suite and production build results are recorded with the fix commit.
 
+## Persona test
+
+- Persona: Laura, 46, owner of an eight-person distribution business in Mexico; uses common office and online tools, has no cybersecurity training, reads unfamiliar software terms slowly, and prioritizes keeping operations running.
+- Screens/steps evaluated: initial screen, onboarding, simulated assessment, risk summary, five prioritized actions, action instructions and completion, backup verification, incident reporting, human escalation, and product limitations. Review used the supplied deployment URL and the matching local implementation. Browser clicking was unavailable; the deployment returned HTTP 200, but no interactive browser runner was available, so downstream screens were evaluated from their actual source and behavior, not claimed as observed clicks.
+- Confusion log:
+  - Initial screen — Minor. “Escudo PyME” and “Protege lo más importante de tu negocio” tell me this is practical help for my business. “PyME” is a little formal, but the no-technical-terms promise and clear form make me continue. I expect a short guide, not an automatic security check.
+  - Onboarding — Minor. I understand name, type of business, and number of employees. “Evaluación simulada” is unfamiliar, but the next sentence explains it uses made-up data and does not inspect devices or accounts. I expect a demo guide and continue.
+  - Simulated assessment — Moderate. The next view presents “Revisión inicial” with items “Por revisar” or “Parcial.” I can understand the labels, but may read them as findings about my own business even though the panel says it uses demonstration data. I continue because the listed actions could still be useful.
+  - Current risk summary — Severe. “Nivel de riesgo actual: Medio” sounds like an assessment of my business. The nearby simulation notice conflicts with “actual”; I may treat “Medio” as a real measured result and use it to decide how urgently to act. I hesitate and might either relax too much or spend time responding to a score that was never measured.
+  - Five prioritized actions — Minor. “Tus 5 acciones prioritarias” and numbered priorities are easy to scan. “Verificación en dos pasos” is slightly unfamiliar, but the first action names email and online banking and explains an extra step. I continue, expecting tasks that protect access and files.
+  - Action detail — Moderate. “Responsable” and “Tiempo estimado” help me decide who can do the work. Some steps still say “configuración de seguridad” or “códigos de recuperación” without naming the exact service, so I may need to find the setting in Gmail or banking myself. I try the step because its business value and time estimate are clear.
+  - Action completion — Minor. “Marcar como completada” is understandable as my own progress marker, but it does not check whether I did the steps. I expect it to record my claim in this browser and can leave it pending if I have not finished.
+  - Backup verification — Moderate. “Respaldo” and “recuperar un archivo” are understandable, but I need to actually try opening a sample file before checking the box. I hesitate if I do not know where the copy is; the page clearly says it does not inspect my files, so I would leave it unchecked.
+  - Incident reporting — Moderate. “Tipo de problema,” “¿Qué notaste?” and whether operations are affected are understandable. The exact date and time and warning about sending text to OpenAI if enabled make me pause; I should omit sensitive details. I would continue only for a real problem because the form asks for a concise description and promises initial guidance.
+  - Human escalation — Minor. “Se requiere confirmación humana” could sound like Escudo will arrange a person, but the following copy says I must share this through my usual channel and that the form does not contact anyone automatically. I understand I need to call/message my responsible person and continue.
+  - Limitations/disclaimer — Minor. The repeated notes say the review is simulated, does not inspect accounts or devices, and cannot guarantee security or close an incident. This is clear, though it is easy to skim past while working through the dashboard.
+- Worst confusion: the diagnostic-sounding “Nivel de riesgo actual: Medio” in the dashboard. Laura can mistake fixed demonstration data for a real reading and misjudge the urgency of protecting business operations. This is worse than the action wording or form friction because it can directly distort her understanding of her business risk before she chooses what to do.
+- Fix made: changed only the risk heading to “Nivel de riesgo simulado” and added a copy regression assertion. The score and rest of the flow remain as authored.
+- Verification result: `npm test` passed (3 files, 9 tests); `npm run build` completed successfully.
+
 ## Next session first move
 
 Configure Supabase Auth and user-scoped RLS-backed persistence before enabling storage of real business profiles, action progress, or incident reports.

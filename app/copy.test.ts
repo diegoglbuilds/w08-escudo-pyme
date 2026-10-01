@@ -9,6 +9,7 @@ describe("Spanish UI and shadow constraints", () => {
     expect(page).toContain("Escudo PyME");
     expect(page).toContain("Protege lo más importante de tu negocio.");
     expect(page).toContain("Tus 5 acciones prioritarias");
+    expect(page).toContain("Nivel de riesgo simulado:");
     expect(page).toContain("Se requiere confirmación humana.");
     expect(page).toContain("Escudo PyME reduce riesgos, pero ningún sistema puede garantizar seguridad total.");
     expect(page).toContain("Respuesta de IA simulada para demostración.");
