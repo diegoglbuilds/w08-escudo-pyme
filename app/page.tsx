@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { getAssessment } from "@/lib/assessment";
 
 type BusinessProfile = { name: string; type: string; size: string };
@@ -9,6 +9,42 @@ export default function HomePage() {
   const [profile, setProfile] = useState<BusinessProfile | null>(null);
   const [error, setError] = useState("");
   const assessment = getAssessment();
+  const [completed, setCompleted] = useState<Record<string, boolean>>({});
+  const [backupVerified, setBackupVerified] = useState(false);
+  const [progressLoaded, setProgressLoaded] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("escudo-pyme-demo-progress");
+      if (!saved || saved.length > 1000) return;
+      const parsed: unknown = JSON.parse(saved);
+      if (typeof parsed !== "object" || parsed === null) return;
+      const value = parsed as { completed?: unknown; backupVerified?: unknown };
+      if (typeof value.completed === "object" && value.completed !== null) {
+        const safeProgress: Record<string, boolean> = {};
+        for (const action of assessment.actions) {
+          const status = (value.completed as Record<string, unknown>)[action.id];
+          if (typeof status === "boolean") safeProgress[action.id] = status;
+        }
+        setCompleted(safeProgress);
+      }
+      if (typeof value.backupVerified === "boolean") setBackupVerified(value.backupVerified);
+    } catch {
+      setCompleted({});
+      setBackupVerified(false);
+    } finally {
+      setProgressLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!progressLoaded) return;
+    try {
+      localStorage.setItem("escudo-pyme-demo-progress", JSON.stringify({ completed, backupVerified }));
+    } catch {
+      // Progress remains available for the current visit if browser storage is unavailable.
+    }
+  }, [completed, backupVerified, progressLoaded]);
 
   function startOnboarding(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -94,7 +130,8 @@ export default function HomePage() {
         </div>
         <section className="mt-8" aria-labelledby="actions-heading">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2"><div><p className="text-sm font-semibold text-forest">Empieza por lo más importante</p><h2 id="actions-heading" className="mt-1 text-2xl font-bold">Tus 5 acciones prioritarias</h2></div><p className="text-sm text-slate-600">Guía inicial · Datos de demostración</p></div>
-          <ol className="grid gap-4 md:grid-cols-2">{assessment.actions.map((action) => <li key={action.id} className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-card"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-full bg-mint text-sm font-bold text-forest">{action.priority}</span><span className="text-xs font-semibold uppercase tracking-wide text-forest">Prioridad {action.priority}</span></div><h3 className="mt-4 text-lg font-bold">{action.title}</h3><p className="mt-2 text-sm leading-6 text-slate-700"><strong>Qué pasa:</strong> {action.issue}</p><p className="mt-2 text-sm leading-6 text-slate-600"><strong>Por qué importa:</strong> {action.whyItMatters}</p></li>)}</ol>
+          <p className="mb-3 text-sm text-slate-600">{Object.values(completed).filter(Boolean).length} de 5 acciones completadas.</p>
+          <ol className="grid gap-4 md:grid-cols-2">{assessment.actions.map((action) => <li key={action.id} className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-card"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-full bg-mint text-sm font-bold text-forest">{action.priority}</span><span className="text-xs font-semibold uppercase tracking-wide text-forest">Prioridad {action.priority}</span>{completed[action.id] && <span className="ml-auto rounded-full bg-emerald-100 px-2 py-1 text-xs">Completada</span>}</div><h3 className="mt-4 text-lg font-bold">{action.title}</h3><p className="mt-2 text-sm leading-6 text-slate-700"><strong>Qué pasa:</strong> {action.issue}</p><p className="mt-2 text-sm leading-6 text-slate-600"><strong>Por qué importa:</strong> {action.whyItMatters}</p><div className="mt-4 rounded-xl bg-paper p-4"><h4 className="text-sm font-bold">Qué hacer</h4><ol className="mt-2 list-inside list-decimal space-y-1.5 text-sm leading-5 text-slate-700">{action.steps?.map((step) => <li key={step}>{step}</li>)}</ol><p className="mt-4 text-sm"><strong>Responsable:</strong> {action.owner}</p><p className="mt-1 text-sm"><strong>Tiempo estimado:</strong> {action.effort}</p></div><button type="button" onClick={() => setCompleted((current) => ({ ...current, [action.id]: !current[action.id] }))} className="mt-4 rounded-xl border border-forest px-4 py-2.5 text-sm font-semibold text-forest hover:bg-mint">{completed[action.id] ? "Marcar como pendiente" : "Marcar como completada"}</button>{action.id === "backups" && <div className="mt-4 border-t border-slate-200 pt-4"><p className="text-sm font-semibold">Verificación del respaldo</p><p className="mt-1 text-xs leading-5 text-slate-600">Marca esto solo después de comprobar que puedes recuperar un archivo. Esta demo no revisa tus archivos.</p><label className="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={backupVerified} onChange={(event) => setBackupVerified(event.target.checked)} />Confirmo que probé un respaldo</label><p className="mt-2 text-xs font-medium text-forest">{backupVerified ? "Prueba registrada en este navegador" : "Aún falta probar el respaldo"}</p></div>}</li>)}</ol>
         </section>
         <p className="mt-8 border-t border-emerald-950/10 py-5 text-sm text-slate-600">Escudo PyME reduce riesgos, pero ningún sistema puede garantizar seguridad total.</p>
       </section>}

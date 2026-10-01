@@ -14,6 +14,9 @@ export type PriorityAction = {
   title: string;
   issue: string;
   whyItMatters: string;
+  steps?: string[];
+  owner?: string;
+  effort?: string;
 };
 
 export const simulatedFindings: SecurityFinding[] = [
@@ -32,11 +35,19 @@ const actions: PriorityAction[] = [
   { id: "incident", priority: 5, title: "Definir un plan de respuesta a incidentes", issue: "Sin pasos acordados, el equipo puede perder tiempo al enfrentar algo sospechoso.", whyItMatters: "Saber a quién avisar y cómo cuidar la operación ayuda a responder con calma." },
 ];
 
+const actionDetails: Record<string, Pick<PriorityAction, "steps" | "owner" | "effort">> = {
+  mfa: { steps: ["Elige primero el correo y la banca del negocio.", "En la configuraci\u00f3n de seguridad, activa la verificaci\u00f3n en dos pasos.", "Guarda los c\u00f3digos de recuperaci\u00f3n en un lugar seguro."], owner: "Due\u00f1a o due\u00f1o del negocio", effort: "15 a 30 minutos" },
+  backups: { steps: ["Identifica los archivos que el negocio necesita para operar.", "Activa el respaldo autom\u00e1tico en el servicio que ya utilizas.", "Prueba abrir un archivo de muestra y anota cu\u00e1ndo hiciste la prueba."], owner: "Persona responsable de administraci\u00f3n", effort: "30 a 60 minutos" },
+  access: { steps: ["Revisa qui\u00e9nes tienen acceso a las cuentas del negocio.", "Confirma qu\u00e9 accesos necesita cada responsable.", "Retira los accesos que ya no se usan y registra el cambio."], owner: "Due\u00f1a o due\u00f1o del negocio", effort: "20 a 40 minutos" },
+  updates: { steps: ["Elige un momento de poco movimiento para revisar los equipos.", "Instala las actualizaciones pendientes del sistema y programas.", "Activa las actualizaciones autom\u00e1ticas cuando est\u00e9n disponibles."], owner: "Persona encargada de los equipos", effort: "20 a 45 minutos" },
+  incident: { steps: ["Anota c\u00f3mo reportar un problema y a qui\u00e9n contactar.", "Acuerden c\u00f3mo cuidar la operaci\u00f3n mientras revisan el problema.", "Define qui\u00e9n pide apoyo especializado y qui\u00e9n confirma los pasos."], owner: "Due\u00f1a o due\u00f1o del negocio", effort: "30 minutos" },
+};
+
 export function getAssessment() {
   return {
     label: "Evaluación simulada" as const,
     risk: "Medio" as RiskLevel,
     findings: simulatedFindings,
-    actions: actions.slice(0, 5),
+    actions: actions.slice(0, 5).map((action) => ({ ...action, ...actionDetails[action.id] })),
   };
 }
