@@ -9,6 +9,10 @@
 - Do not enable collection of real business or personal data until Supabase Auth, per-user RLS policies, and persistence are configured and reviewed.
 - Route any OpenAI use through server code and `OPENAI_API_KEY`; provide a visibly labeled deterministic fallback when the key is absent.
 - Human responsibility is required for important or ambiguous incidents; AI suggestions never close an incident.
+- Incident reports are validated server-side and are not persisted. The route uses strict enums, a 500-character description limit, and a bounded request body.
+- The model receives only the validated incident category, short description, timestamp, and operations-impact flag. Model text is bounded and checked against a schema; deterministic policy sets a severity floor and enforces human confirmation.
+- With no usable OpenAI response, the incident route returns a deterministic result visibly labeled as simulated AI. A live API key is read only on the server and is never sent to client code.
+- Action completion and backup verification use browser storage solely for this local demo. They are not authentication or secure persistence.
 
 ## Next session first move
 

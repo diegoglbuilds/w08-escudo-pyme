@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { getAssessment } from "@/lib/assessment";
+import type { IncidentCategory, TriageSuggestion } from "@/lib/incident";
 
 type BusinessProfile = { name: string; type: string; size: string };
 
@@ -12,6 +13,9 @@ export default function HomePage() {
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
   const [backupVerified, setBackupVerified] = useState(false);
   const [progressLoaded, setProgressLoaded] = useState(false);
+  const [incidentResult, setIncidentResult] = useState<TriageSuggestion | null>(null);
+  const [incidentError, setIncidentError] = useState("");
+  const [incidentLoading, setIncidentLoading] = useState(false);
 
   useEffect(() => {
     try {
@@ -58,6 +62,33 @@ export default function HomePage() {
     }
     setError("");
     setProfile({ name, type, size });
+  }
+
+  async function reportIncident(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIncidentLoading(true);
+    setIncidentError("");
+    setIncidentResult(null);
+    const data = new FormData(event.currentTarget);
+    const report = {
+      category: String(data.get("category")) as IncidentCategory,
+      description: String(data.get("description") ?? ""),
+      noticedAt: String(data.get("noticedAt") ?? ""),
+      operationsAffected: data.get("operationsAffected") === "si",
+    };
+    try {
+      const response = await fetch("/api/triage", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(report) });
+      const result = await response.json() as TriageSuggestion | { error?: string };
+      if (!response.ok || "error" in result || !("severity" in result)) {
+        setIncidentError("error" in result && result.error ? result.error : "No pudimos revisar el reporte. Intenta de nuevo.");
+        return;
+      }
+      setIncidentResult(result);
+    } catch {
+      setIncidentError("No pudimos conectar con la guía de incidentes. Intenta de nuevo.");
+    } finally {
+      setIncidentLoading(false);
+    }
   }
 
   return (
@@ -132,6 +163,18 @@ export default function HomePage() {
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2"><div><p className="text-sm font-semibold text-forest">Empieza por lo más importante</p><h2 id="actions-heading" className="mt-1 text-2xl font-bold">Tus 5 acciones prioritarias</h2></div><p className="text-sm text-slate-600">Guía inicial · Datos de demostración</p></div>
           <p className="mb-3 text-sm text-slate-600">{Object.values(completed).filter(Boolean).length} de 5 acciones completadas.</p>
           <ol className="grid gap-4 md:grid-cols-2">{assessment.actions.map((action) => <li key={action.id} className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-card"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-full bg-mint text-sm font-bold text-forest">{action.priority}</span><span className="text-xs font-semibold uppercase tracking-wide text-forest">Prioridad {action.priority}</span>{completed[action.id] && <span className="ml-auto rounded-full bg-emerald-100 px-2 py-1 text-xs">Completada</span>}</div><h3 className="mt-4 text-lg font-bold">{action.title}</h3><p className="mt-2 text-sm leading-6 text-slate-700"><strong>Qué pasa:</strong> {action.issue}</p><p className="mt-2 text-sm leading-6 text-slate-600"><strong>Por qué importa:</strong> {action.whyItMatters}</p><div className="mt-4 rounded-xl bg-paper p-4"><h4 className="text-sm font-bold">Qué hacer</h4><ol className="mt-2 list-inside list-decimal space-y-1.5 text-sm leading-5 text-slate-700">{action.steps?.map((step) => <li key={step}>{step}</li>)}</ol><p className="mt-4 text-sm"><strong>Responsable:</strong> {action.owner}</p><p className="mt-1 text-sm"><strong>Tiempo estimado:</strong> {action.effort}</p></div><button type="button" onClick={() => setCompleted((current) => ({ ...current, [action.id]: !current[action.id] }))} className="mt-4 rounded-xl border border-forest px-4 py-2.5 text-sm font-semibold text-forest hover:bg-mint">{completed[action.id] ? "Marcar como pendiente" : "Marcar como completada"}</button>{action.id === "backups" && <div className="mt-4 border-t border-slate-200 pt-4"><p className="text-sm font-semibold">Verificación del respaldo</p><p className="mt-1 text-xs leading-5 text-slate-600">Marca esto solo después de comprobar que puedes recuperar un archivo. Esta demo no revisa tus archivos.</p><label className="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={backupVerified} onChange={(event) => setBackupVerified(event.target.checked)} />Confirmo que probé un respaldo</label><p className="mt-2 text-xs font-medium text-forest">{backupVerified ? "Prueba registrada en este navegador" : "Aún falta probar el respaldo"}</p></div>}</li>)}</ol>
+        </section>
+        <section className="mt-8 grid gap-5 md:grid-cols-[.8fr_1.2fr]" aria-labelledby="incident-heading">
+          <div><p className="text-sm font-semibold text-forest">Si algo no parece normal</p><h2 id="incident-heading" className="mt-1 text-2xl font-bold">Reportar un posible incidente</h2><p className="mt-3 text-sm leading-6 text-slate-600">Comparte solo lo necesario. No incluyas nombres, contraseñas, códigos, datos bancarios ni información de clientes. El reporte no se guarda en esta demo.</p></div>
+          <form onSubmit={reportIncident} className="space-y-4 rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-card">
+            <label className="block text-sm font-medium">Tipo de problema<select name="category" required defaultValue="" className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-4 py-3"><option value="" disabled>Selecciona una categoría</option><option value="cuenta">Cuenta o acceso</option><option value="archivos">Archivos o información</option><option value="dispositivo">Dispositivo</option><option value="servicio">Servicio que no funciona</option><option value="otro">No estoy seguro / otro</option></select></label>
+            <label className="block text-sm font-medium">¿Qué notaste?<textarea name="description" required minLength={10} maxLength={500} rows={3} placeholder="Describe brevemente lo que pasó" className="mt-1.5 w-full resize-y rounded-xl border border-slate-300 px-4 py-3" /></label>
+            <label className="block text-sm font-medium">¿Cuándo lo notaste?<input name="noticedAt" type="datetime-local" required max={new Date().toISOString().slice(0, 16)} className="mt-1.5 w-full rounded-xl border border-slate-300 px-4 py-3" /></label>
+            <label className="block text-sm font-medium">¿Afecta la operación del negocio?<select name="operationsAffected" required defaultValue="no" className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-4 py-3"><option value="no">No</option><option value="si">Sí</option></select></label>
+            {incidentError && <p role="alert" className="text-sm text-rose-700">{incidentError}</p>}
+            <button disabled={incidentLoading} className="w-full rounded-xl bg-forest px-4 py-3 font-semibold text-white disabled:opacity-60">{incidentLoading ? "Revisando el reporte…" : "Recibir orientación inicial"}</button>
+            {incidentResult && <div className="rounded-xl border border-slate-200 bg-paper p-4" aria-live="polite"><div className="flex flex-wrap items-center gap-2"><h3 className="font-bold">Nivel sugerido: {incidentResult.severity}</h3>{incidentResult.simulated && <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-950">Respuesta de IA simulada para demostración.</span>}</div><p className="mt-2 text-sm leading-6">{incidentResult.summary}</p><ol className="mt-3 list-inside list-decimal space-y-1.5 text-sm leading-5">{incidentResult.steps.map((step) => <li key={step}>{step}</li>)}</ol>{incidentResult.humanConfirmationRequired && <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4"><p className="font-bold text-amber-950">Se requiere confirmación humana.</p><p className="mt-1 text-sm leading-5 text-amber-950">Una persona responsable debe revisar el caso y confirmar los siguientes pasos. Escudo PyME no puede cerrar este incidente.</p></div>}<p className="mt-3 text-xs leading-5 text-slate-500">La orientación no confirma si hubo un ataque ni sustituye a una persona especialista.</p></div>}
+          </form>
         </section>
         <p className="mt-8 border-t border-emerald-950/10 py-5 text-sm text-slate-600">Escudo PyME reduce riesgos, pero ningún sistema puede garantizar seguridad total.</p>
       </section>}
