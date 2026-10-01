@@ -14,9 +14,9 @@ export type PriorityAction = {
   title: string;
   issue: string;
   whyItMatters: string;
-  steps?: string[];
-  owner?: string;
-  effort?: string;
+  steps: string[];
+  owner: string;
+  effort: string;
 };
 
 export const simulatedFindings: SecurityFinding[] = [
@@ -27,7 +27,7 @@ export const simulatedFindings: SecurityFinding[] = [
   { id: "incident", label: "Respuesta a incidentes", status: "pendiente", summary: "No se ha documentado qué hacer ante una interrupción o cuenta sospechosa." },
 ];
 
-const actions: PriorityAction[] = [
+const actions: Omit<PriorityAction, "steps" | "owner" | "effort">[] = [
   { id: "mfa", priority: 1, title: "Activar la verificación en dos pasos", issue: "Las cuentas principales podrían depender solo de una contraseña.", whyItMatters: "Un segundo paso dificulta que alguien entre aunque conozca una contraseña." },
   { id: "backups", priority: 2, title: "Configurar respaldos automáticos", issue: "Un respaldo manual puede olvidarse o quedar desactualizado.", whyItMatters: "Una copia reciente ayuda a recuperar archivos y seguir operando después de un problema." },
   { id: "access", priority: 3, title: "Revisar quién tiene acceso", issue: "No se ha confirmado quién conserva acceso a las cuentas del negocio.", whyItMatters: "Quitar accesos que ya no se necesitan reduce oportunidades de cambios o consultas no autorizadas." },

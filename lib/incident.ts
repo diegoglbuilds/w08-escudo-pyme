@@ -24,7 +24,7 @@ export function validateIncident(value: unknown): { ok: true; data: IncidentInpu
   if (typeof input.description !== "string") return { ok: false, error: "Escribe una descripción breve." };
   const description = input.description.trim().replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ");
   if (description.length < 10 || description.length > 500) return { ok: false, error: "La descripción debe tener entre 10 y 500 caracteres." };
-  if (typeof input.noticedAt !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input.noticedAt)) return { ok: false, error: "Indica cuándo lo notaste." };
+  if (typeof input.noticedAt !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(input.noticedAt)) return { ok: false, error: "Indica cuándo lo notaste." };
   const noticed = new Date(input.noticedAt);
   if (Number.isNaN(noticed.getTime()) || noticed.getTime() > Date.now() + 60_000) return { ok: false, error: "La fecha y hora deben ser válidas y no futuras." };
   if (typeof input.operationsAffected !== "boolean") return { ok: false, error: "Indica si la operación del negocio está afectada." };

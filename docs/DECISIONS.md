@@ -16,6 +16,7 @@
 - Upgrade to the patched Next.js 16.3.8 release and React 19 after the installed 14.x line was reported vulnerable; the resulting npm audit reported zero vulnerabilities.
 - Normalize the incident form's local date/time to ISO UTC before submission, and require an explicit UTC timestamp in the API, to avoid timezone-dependent future-date checks.
 - Keep the first deployment demo-only. Supabase Auth, Postgres, and user-scoped RLS are prerequisites before enabling real business or incident data persistence.
+- Do not configure a Supabase service-role key in this demo; the app has no Supabase client or persistence layer yet, and the key is not needed for client Auth with RLS.
 
 ## Next session first move
 
